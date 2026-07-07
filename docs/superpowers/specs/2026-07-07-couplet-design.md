@@ -235,15 +235,19 @@ Run `superpowers:frontend-design` before UI code; run `web-interface-guidelines`
 
 ---
 
-## 10. Phasing
+## 10. Build order — one continuous build, full vision
 
-**Phase 1 — the spine (end-to-end).** Turso schema, `normalize()` + unit tests, anthology file (can start with ~15 entries, grow to 40–50 during Phase 3), `/api/explain` with full AI checklist (§6), explanation UI, ONE card theme (Ivory) square-format with PNG export, anthology + permalink pages. *Acceptance: paste a famous sher in Roman Urdu → correct Urdu-script rendering, correct attribution tier, full explanation, downloadable card. Fitting test case: "dil se niklegi na mar kar bhi watan ki ulfat" — this exact line is itself widely misattributed online, so first verify its true attribution against Rekhta, then place it in whichever file that verdict dictates (anthology if verifiable, decoys if contested) and assert the matching tier.*
+Per Moiz's global standards: **build the complete app, then test it hard — do not split the vision into shippable phases.** Nothing deploys until everything in this spec exists and has survived testing. The order below is dependency sequencing within that single build, not a phasing plan:
 
-**Phase 2 — the growth engine.** All themes + story format, editable one-liner, OG pre-render script + meta tags, frontend-design polish pass to Tier A, `web-interface-guidelines` check.
+1. **The spine.** Turso schema, `normalize()` + unit tests, the anthology file at full size (40–50 source-verified entries + `eval-decoys.ts`), `/api/explain` with the full AI checklist (§6), explanation UI, anthology + permalink pages.
+2. **The growth engine.** All card themes × both formats, editable one-liner, PNG export with the font-readiness gate, OG pre-render script + meta tags.
+3. **Design to Tier A.** `superpowers:frontend-design`-driven polish across app + cards, then `web-interface-guidelines` check.
+4. **Hard testing + proof.** Full eval run meeting §8 thresholds, pre-flight checklist (§11), `superpowers:webapp-testing` pass over every flow (both input scripts, all attribution tiers, invalid input, rate-limit hit, card export in both formats).
+5. **Ship.** Deploy to Vercel + `couplet.moizbuilds.com` DNS (the MCP Vercel account is NOT Moiz's real one — give him the record values to add himself), then the 3-bullet learning summary.
 
-**Phase 3 — proof + ship.** Anthology to 40–50 + decoys, full eval run meeting §8 thresholds, pre-flight checklist (§11), `superpowers:webapp-testing` pass, deploy to Vercel + `couplet.moizbuilds.com` DNS (note: the MCP Vercel account is NOT Moiz's real one — give him the DNS record values to add himself), 3-bullet learning summary for Moiz.
+Run `/code-review` after each step above, not just at the end.
 
-`/code-review` after each phase minimum; after each significant step preferred.
+*End-to-end acceptance: paste a famous sher in Roman Urdu → correct Urdu-script rendering, correct attribution tier, full explanation, downloadable card. Fitting test case: "dil se niklegi na mar kar bhi watan ki ulfat" — this exact line is itself widely misattributed online, so first verify its true attribution against Rekhta, then place it in whichever file that verdict dictates (anthology if verifiable, decoys if contested) and assert the matching tier.*
 
 ---
 
