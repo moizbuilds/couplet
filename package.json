@@ -1,0 +1,41 @@
+{
+	"name": "couplet",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"migrate": "tsx scripts/migrate.ts",
+		"seed": "tsx scripts/seed-anthology.ts",
+		"og": "tsx scripts/render-og.ts",
+		"eval": "tsx scripts/run-eval.ts"
+	},
+	"devDependencies": {
+		"@fontsource-variable/fraunces": "^5.2.9",
+		"@fontsource/ibm-plex-sans": "^5.2.8",
+		"@fontsource/noto-nastaliq-urdu": "^5.2.8",
+		"@sveltejs/adapter-vercel": "^6.3.4",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"dotenv": "^17.4.2",
+		"playwright": "^1.61.1",
+		"svelte": "^5.56.1",
+		"svelte-check": "^4.6.0",
+		"tsx": "^4.23.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16",
+		"vitest": "^4.1.10"
+	},
+	"dependencies": {
+		"@anthropic-ai/sdk": "^0.110.0",
+		"@libsql/client": "^0.17.4",
+		"html-to-image": "^1.11.13"
+	}
+}

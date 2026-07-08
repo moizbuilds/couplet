@@ -1,0 +1,18 @@
+/*
+ * Design tokens: the single source of truth for fonts/colors/spacing.
+ * WHY: components reference variables, never literal values — so the
+ * Task 9 design pass restyles the whole app by editing this one file.
+ */
+:root {
+	--font-urdu: 'Noto Nastaliq Urdu', serif;
+	--font-display: 'Fraunces Variable', serif;
+	--font-body: 'IBM Plex Sans', sans-serif;
+}
+
+/* Nastaliq is a diagonal, deep-descending script (spec §12 Landmine #2):
+   without ~2.1 line-height, descenders clip and lines collide. */
+.urdu {
+	font-family: var(--font-urdu);
+	line-height: 2.1;
+	direction: rtl;
+}
