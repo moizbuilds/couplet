@@ -16,7 +16,12 @@ export type MessagesClient = {
 	};
 };
 
-export class LlmError extends Error {}
+export class LlmError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'LlmError';
+	}
+}
 
 let singleton: Anthropic | null = null;
 /** One SDK client per process (AI rule #2): explicit timeout, capped retries. */
@@ -76,14 +81,29 @@ const ANALYZE_TOOL = {
 } as const;
 
 /** Runtime shape check — the API validates against the schema, but we still
- *  verify before trusting (never assume response shape: AI rule #1). */
+ *  verify before trusting (never assume response shape: AI rule #1).
+ *  Validates nested shapes too, not just top-level scalars: every element of
+ *  `themes` must be a string, and every element of `devices` must be an
+ *  object with string urduTerm/english/explanation — otherwise a malformed
+ *  tool_use response (e.g. `devices: [{ urduTerm: 'x' }]`) would slip through
+ *  with `undefined` fields reaching the UI. */
 function assertAnalysis(x: unknown): asserts x is LlmSherAnalysis {
+	const isStr = (v: unknown): v is string => typeof v === 'string';
+	const isDevice = (v: unknown): v is { urduTerm: string; english: string; explanation: string } =>
+		typeof v === 'object' && v !== null &&
+		isStr((v as Record<string, unknown>).urduTerm) &&
+		isStr((v as Record<string, unknown>).english) &&
+		isStr((v as Record<string, unknown>).explanation);
+
 	const o = x as Record<string, unknown>;
 	const ok =
 		o && typeof o.isValidSher === 'boolean' &&
+		(o.invalidReason === null || isStr(o.invalidReason)) &&
 		typeof o.urduScript === 'string' && typeof o.romanUrdu === 'string' &&
 		typeof o.translation === 'string' && typeof o.interpretation === 'string' &&
-		typeof o.context === 'string' && Array.isArray(o.themes) && Array.isArray(o.devices) &&
+		typeof o.context === 'string' &&
+		Array.isArray(o.themes) && o.themes.every(isStr) &&
+		Array.isArray(o.devices) && o.devices.every(isDevice) &&
 		(o.poetGuess === null || typeof o.poetGuess === 'string') &&
 		['high', 'low', 'none'].includes(o.attributionConfidence as string);
 	if (!ok) throw new LlmError('LLM returned an unexpected shape');

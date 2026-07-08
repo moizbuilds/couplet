@@ -38,4 +38,14 @@ describe('explainWithClaude', () => {
 		await expect(explainWithClaude(clientReturning([{ type: 'tool_use', input: bad }]), 'x'))
 			.rejects.toBeInstanceOf(LlmError);
 	});
+	it('throws LlmError when a devices[] element is missing fields (english, explanation)', async () => {
+		const bad = { ...validAnalysis, devices: [{ urduTerm: 'x' }] };
+		await expect(explainWithClaude(clientReturning([{ type: 'tool_use', input: bad }]), 'x'))
+			.rejects.toBeInstanceOf(LlmError);
+	});
+	it('throws LlmError when invalidReason is a number instead of string | null', async () => {
+		const bad = { ...validAnalysis, invalidReason: 123 };
+		await expect(explainWithClaude(clientReturning([{ type: 'tool_use', input: bad }]), 'x'))
+			.rejects.toBeInstanceOf(LlmError);
+	});
 });

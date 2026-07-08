@@ -54,4 +54,11 @@ describe('processSher', () => {
 		const r = await processSher({ db, client }, 'yeh koi aisa misra jo roman se match nahi karega bilkul');
 		expect(r.attribution).toEqual({ tier: 'verified', poet: ghalib.poet, slug: ghalib.slug });
 	});
+	it('invalid input (isValidSher: false) → unknown tier, and no cache row is written', async () => {
+		const client = clientWith(analysisFor({ isValidSher: false, invalidReason: 'This looks like prose, not a sher.' }));
+		const r = await processSher({ db, client }, 'yeh sirf aam nasar hai, sher nahi hai bilkul bhi');
+		expect(r.attribution).toEqual({ tier: 'unknown' });
+		const { rows } = await db.execute('SELECT COUNT(*) as count FROM explanations');
+		expect(Number(rows[0].count)).toBe(0);
+	});
 });
