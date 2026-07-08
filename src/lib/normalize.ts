@@ -6,8 +6,17 @@
  * sher could be "verified" in one place and "unknown" in another.
  */
 
-// Harakat (vowel marks), superscript alef, tatweel — decorative for matching.
-const URDU_DIACRITICS = /[ً-ٰٟـ]/g;
+// Harakat/combining marks (U+064B-065F), superscript alef (U+0670), and
+// tatweel (U+0640) — decorative for matching, safe to strip.
+// Written with explicit \u escapes rather than literal Arabic characters in
+// a range: a right-to-left character range typed as "first - last" can
+// visually look identical while silently parsing to a different, wider
+// codepoint span depending on typing/paste order. That exact RTL-bidi trap
+// is how a previous version of this regex ended up spanning U+064B-0670,
+// which silently deleted Arabic-Indic digits (٠-٩, U+0660-0669) and
+// two real letters, dotless beh (U+066E) and dotless qaf (U+066F), along
+// with the actual diacritics.
+const URDU_DIACRITICS = /[\u064B-\u065F\u0670\u0640]/g;
 // Urdu + Latin punctuation, incl. ۔ ؟ ،
 const PUNCT = /[۔؟،٬!?.,;:'"“”‘’…()[\]{}«»\-—_]/g;
 
@@ -35,10 +44,21 @@ const ROMAN_DIGRAPHS: [RegExp, string][] = [
 const ROMAN_CHARS: [RegExp, string][] = [[/q/g, 'k'], [/w/g, 'v'], [/z/g, 'j']];
 
 export function normalizeRoman(s: string): string {
-	let out = s.toLowerCase().replace(/[^a-z]/g, '');
+	// BUG (fixed): stripping spaces before folding digraphs let a digraph
+	// regex span two originally-separate words — e.g. "sada ishq" became
+	// "sadaishq" and /a[iye]/g then folded the injected "a"+"i" seam into
+	// "e", changing a character that would NOT have changed had line 1
+	// ("...sada") been normalized alone. That silently broke the
+	// containment path in isMatch() for a user pasting only one line of a
+	// two-line sher. Fix: mirror normalizeUrdu — keep spaces present as
+	// word-boundary markers WHILE folding (so no digraph can cross a
+	// boundary that existed in the original text), and only strip
+	// whitespace as the LAST step.
+	let out = s.toLowerCase().replace(/[^a-z\s]/g, ' ');
 	for (const [re, to] of ROMAN_DIGRAPHS) out = out.replace(re, to);
 	for (const [re, to] of ROMAN_CHARS) out = out.replace(re, to);
-	return out.replace(/(.)\1+/g, '$1'); // 'dilll'→'dil', 'aa'→'a'
+	out = out.replace(/(.)\1+/g, '$1'); // 'dilll'→'dil', 'aa'→'a'
+	return out.replace(/\s+/g, '');
 }
 
 // CONCEPT: this is a Unicode "character class" regex — ؀-ۿ is the block of

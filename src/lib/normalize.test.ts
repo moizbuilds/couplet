@@ -16,6 +16,25 @@ describe('normalizeUrdu', () => {
 	it('folds ye variants so ے and ی spellings match', () => {
 		expect(normalizeUrdu('نکلے')).toBe(normalizeUrdu('نکلی'));
 	});
+
+	// REGRESSION (review finding, narrowed URDU_DIACRITICS range): the old
+	// regex range ً-ٰ (U+064B-0670) accidentally swallowed Arabic-Indic
+	// digits (U+0660-0669) and two real letters, dotless beh (U+066E) and
+	// dotless qaf (U+066F), because it was typed as a single wide range
+	// instead of the actual harakat block plus the two standalone marks.
+	it('does not delete Arabic-Indic digits (narrowed diacritics range)', () => {
+		expect(normalizeUrdu('۱۲۳')).toBe('۱۲۳');
+		expect(normalizeUrdu('۱۲۳')).not.toBe('');
+	});
+	it('does not delete dotless beh / dotless qaf letters', () => {
+		expect(normalizeUrdu('ٮ')).toBe('ٮ'); // U+066E, not a diacritic
+		expect(normalizeUrdu('ٯ')).toBe('ٯ'); // U+066F, not a diacritic
+	});
+	it('still strips harakat (fatha/zabar etc.) to bare letters', () => {
+		// دَل (with fatha over د) and دل (bare) must normalize identically —
+		// confirms the narrowed range still covers the actual vowel marks.
+		expect(normalizeUrdu('دَل')).toBe(normalizeUrdu('دل'));
+	});
 });
 
 describe('normalizeRoman', () => {
@@ -28,6 +47,20 @@ describe('normalizeRoman', () => {
 		expect(normalizeRoman('wafa')).toBe(normalizeRoman('vafa'));
 		expect(normalizeRoman('qismat')).toBe(normalizeRoman('kismat'));
 		expect(normalizeRoman('dilll')).toBe(normalizeRoman('dil'));
+	});
+
+	// REGRESSION (review finding, critical): normalizeRoman used to strip
+	// spaces BEFORE folding digraphs, so two originally-separate words could
+	// fuse into a phantom digraph — 'sada ishq' → 'sadaishq' → the a[iye]
+	// rule then folds the injected 'ai' seam, changing a character that
+	// would NOT change if line 1 were normalized alone. That silently broke
+	// the isMatch() containment path for a user pasting only line 1 of a
+	// two-line sher. Fix: fold digraphs while spaces are still present as
+	// word boundaries, strip whitespace last (mirrors normalizeUrdu).
+	it('does not fold digraphs across a word boundary (single-line paste containment)', () => {
+		const line1 = normalizeRoman('mera pyar hai sada');
+		const full = normalizeRoman('mera pyar hai sada ishq mein bhi tera mera');
+		expect(isMatch(line1, full)).toBe(true);
 	});
 });
 
