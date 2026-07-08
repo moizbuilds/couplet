@@ -1,18 +1,115 @@
 /*
- * Design tokens: the single source of truth for fonts/colors/spacing.
- * WHY: components reference variables, never literal values — so the
- * Task 9 design pass restyles the whole app by editing this one file.
+ * tokens.css — the single source of truth for Couplet's visual system.
+ * WHY: every component references these variables, never literal hex/font
+ * names, so the whole app is restyled by editing this one file.
+ * The full rationale (palette meanings, type roles, the "katba" signature)
+ * lives in docs/design-direction.md. Direction: a reading room for the
+ * ghazal — ink on haldi-tinted parchment, illuminated in lapis + gold,
+ * the palette of a real Mughal/Persian divan (NOT the cream+terracotta default).
  */
 :root {
-	--font-urdu: 'Noto Nastaliq Urdu', serif;
-	--font-display: 'Fraunces Variable', serif;
-	--font-body: 'IBM Plex Sans', sans-serif;
+	/* ── Type families (three roles, two Latin faces + Nastaliq) ── */
+	--font-urdu: 'Noto Nastaliq Urdu', serif; /* the sher — always the hero */
+	--font-display: 'Fraunces Variable', 'Fraunces', serif; /* wordmark, headings, card one-liner */
+	--font-body: 'Newsreader Variable', 'Newsreader', serif; /* commentary prose + romanization */
+
+	/* ── Palette (light theme). Names are the manuscript terms they come from. ── */
+	--c-paper: #f1eada; /* haldi-tinted parchment — app background */
+	--c-surface: #f8f2e5; /* raised paper — katba panel, cards, inputs */
+	--c-ink: #211d17; /* siyahi — warm sepia-black, primary text */
+	--c-ink-soft: #6a6151; /* muted brown-grey — romanization, captions */
+	--c-lapis: #2c4a6e; /* lajward — links, focus, verified accent */
+	--c-gold: #9b7a2f; /* tazhib — rules, ornaments, verified tick, eyebrows */
+	--c-madder: #9c4a3b; /* faded madder — ONLY the "poet unknown" honesty state */
+
+	/* Hairlines: accent at low alpha, never a flat grey border. */
+	--rule-gold: color-mix(in srgb, var(--c-gold) 55%, transparent);
+	--rule-ink: color-mix(in srgb, var(--c-ink) 22%, transparent);
+
+	/* ── Fluid type scale (see design-direction.md) ── */
+	--t-sher: clamp(1.9rem, 1.3rem + 3vw, 3.1rem);
+	--t-display: clamp(2.4rem, 1.6rem + 3.5vw, 4rem);
+	--t-h2: clamp(1.15rem, 1rem + 0.6vw, 1.4rem);
+	--t-body: 1.15rem;
+	--t-roman: 1rem;
+	--t-eyebrow: 0.78rem;
+	--t-caption: 0.75rem;
+
+	/* ── Spacing rhythm ── */
+	--space-1: 0.5rem;
+	--space-2: 0.85rem;
+	--space-3: 1.35rem;
+	--space-4: 2.15rem;
+	--space-5: 3.4rem;
+	--measure: 68ch; /* prose max line length */
+
+	--radius: 3px; /* manuscript rules are crisp — near-zero radius */
+	--focus-ring: 0 0 0 3px color-mix(in srgb, var(--c-lapis) 45%, transparent);
+}
+
+/* CONCEPT: a tiny reset so type and box-sizing are predictable everywhere. */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	background: var(--c-paper);
+	color: var(--c-ink);
+	font-family: var(--font-body);
+	font-size: var(--t-body);
+	line-height: 1.7;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
 }
 
 /* Nastaliq is a diagonal, deep-descending script (spec §12 Landmine #2):
-   without ~2.1 line-height, descenders clip and lines collide. */
+   without ~2.1 line-height its descenders clip and lines collide. Every
+   Urdu block also needs dir/lang for correct shaping — set in markup. */
 .urdu {
 	font-family: var(--font-urdu);
 	line-height: 2.1;
 	direction: rtl;
+}
+
+/* Display face, used with restraint for headings and the wordmark. */
+.display {
+	font-family: var(--font-display);
+	font-optical-sizing: auto;
+	font-weight: 460;
+	letter-spacing: -0.01em;
+}
+
+/* Gold caps eyebrow — the recurring section label of the "critical edition". */
+.eyebrow {
+	font-family: var(--font-display);
+	font-size: var(--t-eyebrow);
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--c-gold);
+}
+
+a {
+	color: var(--c-lapis);
+	text-underline-offset: 0.18em;
+	text-decoration-thickness: 1px;
+}
+
+/* Visible keyboard focus everywhere (quality floor). */
+:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring);
+	border-radius: var(--radius);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		transition-duration: 0.001ms !important;
+	}
 }

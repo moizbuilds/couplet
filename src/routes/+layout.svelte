@@ -4,8 +4,8 @@
 	import '@fontsource/noto-nastaliq-urdu/400.css';
 	import '@fontsource/noto-nastaliq-urdu/700.css';
 	import '@fontsource-variable/fraunces';
-	import '@fontsource/ibm-plex-sans/400.css';
-	import '@fontsource/ibm-plex-sans/500.css';
+	import '@fontsource-variable/newsreader'; // upright commentary body
+	import '@fontsource-variable/newsreader/wght-italic.css'; // italic glosses / romanization
 	import '../lib/styles/tokens.css';
 	let { children } = $props();
 </script>
