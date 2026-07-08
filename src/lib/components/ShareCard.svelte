@@ -185,10 +185,21 @@
 	}
 
 	/* ── Safha: gallery-minimal. No border at all — the type IS the
-	   design — just a single hairline under the one-liner. ── */
-	.card-safha .meaning {
-		padding-bottom: 0.9rem;
-		border-bottom: 1px solid var(--card-accent);
+	   design — just a single hairline under the one-liner.
+	   WHY this hairline lives on `.watermark` (border-TOP) instead of on
+	   `.meaning` (border-bottom), even though "under the one-liner" reads
+	   like it belongs on `.meaning`: `.meaning` also carries the
+	   `-webkit-line-clamp` truncation (see above), and Chromium has a real
+	   rendering bug where a clamped element's own border/padding-bottom
+	   paints OUTSIDE the box the clamp just clipped to — the computed
+	   height is correct, but the text visibly escapes past the hairline.
+	   Putting the rule on the very next flow sibling instead (the
+	   watermark, which always sits directly below the one-liner) draws the
+	   identical hairline without ever combining border-decoration with the
+	   clamp on one element. */
+	.card-safha .watermark {
+		padding-top: 0.9rem;
+		border-top: 1px solid var(--card-accent);
 	}
 
 	/* ── Raat: no border either — the lapis→transparent wash baked into
