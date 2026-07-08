@@ -22,7 +22,21 @@ describe('normalizeUrdu', () => {
 	// digits (U+0660-0669) and two real letters, dotless beh (U+066E) and
 	// dotless qaf (U+066F), because it was typed as a single wide range
 	// instead of the actual harakat block plus the two standalone marks.
-	it('does not delete Arabic-Indic digits (narrowed diacritics range)', () => {
+	// REGRESSION (review finding, important): the previous version of this
+	// test used '۱۲۳' — U+06F1-06F3 (Extended Arabic-Indic / Urdu-keyboard
+	// digits) — which were NEVER inside the old buggy U+064B-0670 range, so
+	// this assertion would have passed even before the fix and guarded
+	// nothing. The digits the old regex actually deleted are U+0660-0669
+	// (Arabic-Indic ٠١٢٣٤٥٦٧٨٩), because that block sits inside U+064B-0670.
+	// Assert on THAT block so this test would fail on the old code.
+	it('does not delete Arabic-Indic digits U+0660-0669 (the actual vulnerable block)', () => {
+		const digits = String.fromCodePoint(
+			0x0660, 0x0661, 0x0662, 0x0663, 0x0664, 0x0665, 0x0666, 0x0667, 0x0668, 0x0669
+		); // ٠١٢٣٤٥٦٧٨٩
+		expect(normalizeUrdu(digits)).toBe(digits);
+		expect(normalizeUrdu(digits)).toHaveLength(10);
+	});
+	it('does not delete Extended Arabic-Indic (Urdu-keyboard) digits U+06F1-06F3 either', () => {
 		expect(normalizeUrdu('۱۲۳')).toBe('۱۲۳');
 		expect(normalizeUrdu('۱۲۳')).not.toBe('');
 	});
@@ -61,6 +75,17 @@ describe('normalizeRoman', () => {
 		const line1 = normalizeRoman('mera pyar hai sada');
 		const full = normalizeRoman('mera pyar hai sada ishq mein bhi tera mera');
 		expect(isMatch(line1, full)).toBe(true);
+	});
+
+	// REGRESSION (review finding, important): punctuation used to be replaced
+	// with a space instead of deleted, so an apostrophe standing in for
+	// hamza/ain mid-word ("ma'ani", "she'r") split the word into two tokens
+	// before folding ran, diverging from the no-apostrophe spelling of the
+	// same word. Fix: delete intra-word punctuation, keep real spaces as the
+	// only fold boundary.
+	it('treats apostrophe transliterations (hamza/ain) as equal to the plain spelling', () => {
+		expect(normalizeRoman("ma'ani")).toBe(normalizeRoman('maani'));
+		expect(normalizeRoman("she'r")).toBe(normalizeRoman('sher'));
 	});
 });
 

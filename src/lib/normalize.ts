@@ -54,7 +54,18 @@ export function normalizeRoman(s: string): string {
 	// word-boundary markers WHILE folding (so no digraph can cross a
 	// boundary that existed in the original text), and only strip
 	// whitespace as the LAST step.
-	let out = s.toLowerCase().replace(/[^a-z\s]/g, ' ');
+	//
+	// BUG (fixed): punctuation used to be replaced with a SPACE, not deleted.
+	// Apostrophes in Roman Urdu sit INSIDE a word, standing in for hamza/ain —
+	// "ma'ani", "she'r", "qur'an". Turning that apostrophe into a space split
+	// the word into two tokens before the digraph/repeat-collapse folds ever
+	// ran, so "ma'ani" ended up as "maani" while the no-apostrophe spelling
+	// "maani" folded further to "mani" — two spellings of the same word
+	// diverged. Fix: delete non-letter, non-space characters instead of
+	// spacing them out. The character class still excludes \s, so real word
+	// boundaries (actual spaces) are untouched and the digraph word-boundary
+	// fix above still holds.
+	let out = s.toLowerCase().replace(/[^a-z\s]/g, '');
 	for (const [re, to] of ROMAN_DIGRAPHS) out = out.replace(re, to);
 	for (const [re, to] of ROMAN_CHARS) out = out.replace(re, to);
 	out = out.replace(/(.)\1+/g, '$1'); // 'dilll'→'dil', 'aa'→'a'
