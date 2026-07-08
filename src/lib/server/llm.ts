@@ -10,9 +10,18 @@ import type { LlmSherAnalysis } from '../types';
 
 // CONCEPT: dependency injection — instead of creating its network client
 // internally, the function receives it, so tests can hand in a fake.
+// WHY the real SDK's param type (not `Record<string, unknown>`): the real
+// `Anthropic` client's `create` requires specific fields (model, max_tokens,
+// messages) — a looser `Record<string, unknown>` here would let TypeScript
+// believe ANY object is valid input, which breaks the moment the real client
+// is assigned to this type (its create can't actually accept arbitrary
+// records). Fakes in tests are unaffected: a function that ignores its
+// arguments still satisfies a narrower parameter type.
 export type MessagesClient = {
 	messages: {
-		create(params: Record<string, unknown>): Promise<{ content: Array<{ type: string; input?: unknown }> }>;
+		create(
+			params: Anthropic.MessageCreateParamsNonStreaming
+		): Promise<{ content: Array<{ type: string; input?: unknown }> }>;
 	};
 };
 
@@ -46,7 +55,11 @@ Other rules:
 - translation: plain modern English, line by line. interpretation: the deeper reading — imagery, ambiguity, why it lands. Keep Urdu poetic terms (tashbeeh, husn-e-taleel, radif...) in devices[], each glossed in plain English.`;
 
 // The tool's input schema IS our output contract — mirrors LlmSherAnalysis field-for-field.
-const ANALYZE_TOOL = {
+// Typed as `Anthropic.Tool` (not `as const`): `as const` would make `required`
+// a readonly tuple, which the real SDK's `create()` rejects (it wants a
+// mutable `string[]`) — a mismatch invisible until `MessagesClient.create`
+// was tightened to the SDK's real param type above.
+const ANALYZE_TOOL: Anthropic.Tool = {
 	name: 'analyze_sher',
 	description: 'Return the structured analysis of the sher.',
 	input_schema: {
@@ -78,7 +91,7 @@ const ANALYZE_TOOL = {
 			'interpretation', 'context', 'themes', 'devices', 'poetGuess', 'attributionConfidence'
 		]
 	}
-} as const;
+};
 
 /** Runtime shape check — the API validates against the schema, but we still
  *  verify before trusting (never assume response shape: AI rule #1).
