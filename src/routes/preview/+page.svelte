@@ -9,6 +9,7 @@
 	 */
 	import SherInput from '$lib/components/SherInput.svelte';
 	import ExplanationView from '$lib/components/ExplanationView.svelte';
+	import CardStudio from '$lib/components/CardStudio.svelte';
 	import { verifiedFixture, attributedFixture, unknownFixture } from '$lib/fixtures';
 
 	const fixtures = [
@@ -37,6 +38,19 @@
 			<ExplanationView result={f.result} />
 		</section>
 	{/each}
+
+	<section class="block">
+		<h2 class="eyebrow">Task 11 — Card studio (verified fixture)</h2>
+		<!-- The verified fixture's two-line Ghalib sher is the longest of the
+		     three, so this doubles as the descender-clipping check the task
+		     brief calls out — try every theme × both formats here. -->
+		<CardStudio result={verifiedFixture} />
+	</section>
+
+	<section class="block">
+		<h2 class="eyebrow">Card studio — unknown tier (honesty check: no poet line)</h2>
+		<CardStudio result={unknownFixture} />
+	</section>
 </main>
 
 <style>

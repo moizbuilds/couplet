@@ -7,6 +7,7 @@
 	import type { SherExplanationResult } from '$lib/types';
 	import SherInput from '$lib/components/SherInput.svelte';
 	import ExplanationView from '$lib/components/ExplanationView.svelte';
+	import CardStudio from '$lib/components/CardStudio.svelte';
 	let result = $state<SherExplanationResult | null>(null);
 </script>
 
@@ -30,7 +31,7 @@
 		{#key result.analysis.urduScript}
 			<div class="reveal">
 				<ExplanationView {result} />
-				<!-- Task 11 mounts <CardStudio {result} /> here -->
+				<CardStudio {result} />
 			</div>
 		{/key}
 	{/if}
